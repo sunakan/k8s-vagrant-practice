@@ -1,0 +1,57 @@
+@startuml
+skinparam shadowing false
+
+!define AWSPuml https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/master/dist
+!includeurl AWSPuml/AWSCommon.puml
+
+!includeurl AWSPuml/AWSSimplified.puml
+!includeurl AWSPuml/General/Users.puml
+
+skinparam rectangle<<network>> {
+  roundCorner 25
+  borderColor #002CB2
+  backgroundColor #CCD8FE
+  BorderThickness 3
+}
+
+skinparam rectangle<<vm>> {
+  roundCorner 25
+  borderColor #F27C07
+  backgroundColor #FFBC3F
+  fontColor White
+  BorderThickness 3
+}
+
+rectangle "10.240.0.0/24" <<network>> {
+  rectangle "lb\n10.240.0.40" <<vm>> {
+  }
+
+  rectangle "controller-0\n10.240.0.10" <<vm>> {
+  }
+  rectangle "controller-1\n10.240.0.11" <<vm>> {
+  }
+  rectangle "controller-2\n10.240.0.12" <<vm>> {
+  }
+
+  rectangle "worker-0\n10.240.0.20" <<vm>> {
+  }
+  rectangle "worker-1\n10.240.0.21" <<vm>> {
+  }
+  rectangle "worker-2\n10.240.0.22" <<vm>> {
+  }
+}
+
+rectangle "10.200.0.0/24" <<network>> {
+}
+
+rectangle "10.200.1.0/24" <<network>> {
+}
+
+rectangle "10.200.2.0/24" <<network>> {
+}
+
+
+
+Users(users, "Users", "")
+
+@enduml

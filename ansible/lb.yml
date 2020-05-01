@@ -1,0 +1,11 @@
+---
+
+- hosts: lb
+  connection: local
+  become: yes
+  gather_facts: True
+
+  roles:
+    - common
+    - network
+    - haproxy

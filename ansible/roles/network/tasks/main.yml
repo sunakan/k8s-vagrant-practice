@@ -1,0 +1,12 @@
+---
+
+- name: ネットワーク関連でよく使うパッケージ
+  become: yes
+  apt:
+    name:
+      - dnsutils
+      - socat
+      - conntrack
+      - ipset
+    update_cache: yes
+    cache_valid_time: 3600

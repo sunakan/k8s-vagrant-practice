@@ -1,0 +1,10 @@
+---
+
+- hosts: controller
+  connection: local
+  become: yes
+  gather_facts: True
+
+  roles:
+    - common
+    - network
