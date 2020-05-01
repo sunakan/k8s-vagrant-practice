@@ -4,3 +4,4 @@
 
 clean:
 	cd 03-compute-resources && make clean
+	rm -rf *.tar pems
