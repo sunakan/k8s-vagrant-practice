@@ -1,12 +1,14 @@
 all:
-	make ca                          # CA認証局を用意
-	make admin-client-certificate    # Adminクライアント証明書の作成
-	make worker-client-certificate   # Workerクライアント証明書の作成
-	make kube-proxy-certificate      # KubeProxy証明書の作成
-	make kube-scheduler-certificate  # KubeScheduler証明書の作成
-	make kubernetes-certificate      # KubeScheduler証明書の作成
-	make service-account-certificate # サービスアカウント証明書の作成
-	make tar-pems                    # 生成したすべての秘密鍵をアーカイブ
+	make ca                                  # CA認証局を用意
+	make admin-client-certificate            # Admin証明書
+	make worker-client-certificate           # Worker証明書
+	make kube-controller-manager-certificate # KubeControllerManager証明書
+	make kube-proxy-certificate              # KubeProxy証明書
+	make kube-scheduler-certificate          # KubeScheduler証明書
+	make kubernetes-certificate              # KubernetesAPI証明書
+	make service-account-certificate         # サービスアカウント証明書
+	make check                               # 期待する証明書が全てあるか確認
+	make tar-pems                            # 生成したすべての秘密鍵をアーカイブ
 
 # CSRのjson
 # $1：CN
@@ -93,13 +95,17 @@ worker-client-certificate:
 	$(call worker-client-certificate,worker-1,$${WORKER_1_CSR})
 	$(call worker-client-certificate,worker-2,$${WORKER_2_CSR})
 
+export KUBE_CONTROLLER_MANAGER_CSR=$(call csr,system:kube-controller-manager)
+kube-controller-manager-certificate:
+	$(call non-hostname-certificate,kube-controller-manager,$${KUBE_CONTROLLER_MANAGER_CSR})
+
 export KUBE_PROXY_CSR=$(call csr,system:kube-proxy)
 kube-proxy-certificate:
 	$(call non-hostname-certificate,kube-proxy,$${KUBE_PROXY_CSR})
 
 export KUBE_SCHEDULER_CSR=$(call csr,system:kube-scheduler)
 kube-scheduler-certificate:
-	$(call non-hostname-certificate,kube-proxy, $${KUBE_SCHEDULER_CSR})
+	$(call non-hostname-certificate,kube-scheduler, $${KUBE_SCHEDULER_CSR})
 
 # ここはあとでしっかりとやらないと謎過ぎる
 export KUBERNETES_PUBLIC_ADDRESS=10.240.0.40
@@ -119,6 +125,28 @@ kubernetes-certificate:
 export SERVICE_ACCOUNT_CSR=$(call csr,service-accounts)
 service-account-certificate:
 	$(call non-hostname-certificate,service-account, $${SERVICE_ACCOUNT_CSR})
+
+check:
+	ls admin-key.pem
+	ls admin.pem
+	ls ca-key.pem
+	ls ca.pem
+	ls kube-controller-manager-key.pem
+	ls kube-controller-manager.pem
+	ls kube-proxy-key.pem
+	ls kube-proxy.pem
+	ls kube-scheduler-key.pem
+	ls kube-scheduler.pem
+	ls kubernetes-key.pem
+	ls kubernetes.pem
+	ls service-account-key.pem
+	ls service-account.pem
+	ls worker-0-key.pem
+	ls worker-0.pem
+	ls worker-1-key.pem
+	ls worker-1.pem
+	ls worker-2-key.pem
+	ls worker-2.pem
 
 tar-pems:
 	ls pems.tar \
