@@ -52,13 +52,25 @@ define provision-controller-pems
 	vagrant scp ./pems/controller-pems.tar  $1:/home/vagrant/controller/pems.tar
 	vagrant ssh $1 -c 'cd controller && tar xvf ./pems.tar'
 endef
+# WindowsだとMakeターゲットの中でMakeをcallすると失敗する（原因未調査）
 04:
-	make 04-ca-on-lb
-	make 04-dl-and-upload-pems-to-each-vm:
-04-ca-on-lb:
 	vagrant ssh lb-0 -c 'cd lb && make 04-certificate-authority'
-04-dl-and-upload-pems-to-each-vm:
 	vagrant scp lb-0:/home/vagrant/lb/04-certificate-authority/pems.tar ./pems.tar
+	tar xvf ./pems.tar
+	$(call provision-worker-pems,worker-0)
+	$(call provision-worker-pems,worker-1)
+	$(call provision-worker-pems,worker-2)
+	$(call provision-controller-pems,controller-0)
+	$(call provision-controller-pems,controller-1)
+	$(call provision-controller-pems,controller-2)
+#	make 04-ca
+#	make 04-download-certificates
+#	make 04-distribute-certificates
+04-ca:
+	vagrant ssh lb-0 -c 'cd lb && make 04-certificate-authority'
+04-download-certificates:
+	vagrant scp lb-0:/home/vagrant/lb/04-certificate-authority/pems.tar ./pems.tar
+04-distribute-certificates:
 	tar xvf ./pems.tar
 	$(call provision-worker-pems,worker-0)
 	$(call provision-worker-pems,worker-1)
