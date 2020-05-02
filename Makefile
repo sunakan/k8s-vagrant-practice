@@ -79,6 +79,37 @@ endef
 	$(call provision-controller-pems,controller-1)
 	$(call provision-controller-pems,controller-2)
 
+# Workerにkubeconfigを配布
+# $1：Worker名
+define distribute-kubeconfigs-for-worker
+	tar cvf ./kubeconfigs/$1-kubeconfigs.tar \
+		./kubeconfigs/$1.kubeconfig \
+		./kubeconfigs/kube-proxy.kubeconfig
+	vagrant scp ./kubeconfigs/$1-kubeconfigs.tar $1:/home/vagrant/worker/$1-kubeconfigs.tar
+	vagrant ssh $1 -c 'cd worker && tar xvf ./$1-kubeconfigs.tar'
+endef
+
+# Controllerにkubeconfigを配布
+# $1：Controller名
+define distribute-kubeconfigs-for-controller
+	tar cvf ./kubeconfigs/controller-kubeconfigs.tar \
+		./kubeconfigs/admin.kubeconfig \
+		./kubeconfigs/kube-controller-manager.kubeconfig \
+		./kubeconfigs/kube-scheduler.kubeconfig
+	vagrant scp ./kubeconfigs/controller-kubeconfigs.tar $1:/home/vagrant/controller/controller-kubeconfigs.tar
+	vagrant ssh $1 -c 'cd controller && tar xvf ./controller-kubeconfigs.tar'
+endef
+05:
+#	vagrant ssh lb-0 -c 'cd lb && make 05-kubernetes-configuration-files'
+#	vagrant scp lb-0:/home/vagrant/lb/05-kubernetes-configuration-files/kubeconfigs.tar ./kubeconfigs.tar
+	tar xvf ./kubeconfigs.tar
+	$(call distribute-kubeconfigs-for-worker,worker-0)
+	$(call distribute-kubeconfigs-for-worker,worker-1)
+	$(call distribute-kubeconfigs-for-worker,worker-2)
+	$(call distribute-kubeconfigs-for-controller,controller-0)
+	$(call distribute-kubeconfigs-for-controller,controller-1)
+	$(call distribute-kubeconfigs-for-controller,controller-2)
+
 clean:
 	vagrant ssh lb-0 -c 'cd lb && make clean'
 	vagrant ssh controller-0 -c 'cd controller && make clean'

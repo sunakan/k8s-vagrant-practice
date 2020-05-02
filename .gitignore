@@ -1,4 +1,5 @@
 pems*
+*kubeconfig*
 
 # Created by https://www.gitignore.io/api/vim,linux,macos,emacs,windows,vagrant
 # Edit at https://www.gitignore.io/?templates=vim,linux,macos,emacs,windows,vagrant
