@@ -18,12 +18,10 @@ provision: rsync
 ssh:
 	ssh \
 		-o StrictHostKeyChecking=no \
-		-i .vagrant/machines/worker-0/virtualbox/private_key \
-		vagrant@10.240.0.20
+		-i .vagrant/machines/controller-0/virtualbox/private_key \
+		vagrant@10.240.0.10
 #		-i .vagrant/machines/lb-0/virtualbox/private_key \
 #		vagrant@10.240.0.40
-#		-i .vagrant/machines/controller-0/virtualbox/private_key \
-#		vagrant@10.240.0.10
 #		-i .vagrant/machines/worker-0/virtualbox/private_key \
 #		vagrant@10.240.0.20
 
@@ -52,7 +50,6 @@ define provision-controller-pems
 	vagrant scp ./pems/controller-pems.tar  $1:/home/vagrant/controller/pems.tar
 	vagrant ssh $1 -c 'cd controller && tar xvf ./pems.tar'
 endef
-# WindowsだとMakeターゲットの中でMakeをcallすると失敗する（原因未調査）
 04:
 	vagrant ssh lb-0 -c 'cd lb && make 04-certificate-authority'
 	vagrant scp lb-0:/home/vagrant/lb/04-certificate-authority/pems.tar ./pems.tar
@@ -63,6 +60,7 @@ endef
 	$(call provision-controller-pems,controller-0)
 	$(call provision-controller-pems,controller-1)
 	$(call provision-controller-pems,controller-2)
+# Windowsではmakeの入れ子ができない
 #	make 04-ca
 #	make 04-download-certificates
 #	make 04-distribute-certificates
@@ -100,8 +98,8 @@ define distribute-kubeconfigs-for-controller
 	vagrant ssh $1 -c 'cd controller && tar xvf ./controller-kubeconfigs.tar'
 endef
 05:
-#	vagrant ssh lb-0 -c 'cd lb && make 05-kubernetes-configuration-files'
-#	vagrant scp lb-0:/home/vagrant/lb/05-kubernetes-configuration-files/kubeconfigs.tar ./kubeconfigs.tar
+	vagrant ssh lb-0 -c 'cd lb && make 05-kubernetes-configuration-files'
+	vagrant scp lb-0:/home/vagrant/lb/05-kubernetes-configuration-files/kubeconfigs.tar ./kubeconfigs.tar
 	tar xvf ./kubeconfigs.tar
 	$(call distribute-kubeconfigs-for-worker,worker-0)
 	$(call distribute-kubeconfigs-for-worker,worker-1)
@@ -109,6 +107,17 @@ endef
 	$(call distribute-kubeconfigs-for-controller,controller-0)
 	$(call distribute-kubeconfigs-for-controller,controller-1)
 	$(call distribute-kubeconfigs-for-controller,controller-2)
+06:
+	vagrant ssh lb-0 -c 'cd lb && make 06-data-encryption-keys'
+	vagrant scp lb-0:/home/vagrant/lb/06-data-encryption-keys/encryption-config.yml ./encryption-config.yml
+	vagrant scp ./encryption-config.yml controller-0:/home/vagrant/controller/
+	vagrant scp ./encryption-config.yml controller-1:/home/vagrant/controller/
+	vagrant scp ./encryption-config.yml controller-2:/home/vagrant/controller/
+07:
+	vagrant ssh controller-0 -c 'cd controller && make 07-bootstrapping-etcd'
+	vagrant ssh controller-1 -c 'cd controller && make 07-bootstrapping-etcd'
+	vagrant ssh controller-2 -c 'cd controller && make 07-bootstrapping-etcd'
+	vagrant ssh controller-0 -c 'cd controller/07-bootstrapping-etcd && make verify-etcd'
 
 clean:
 	vagrant ssh lb-0 -c 'cd lb && make clean'

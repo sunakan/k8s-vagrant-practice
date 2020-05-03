@@ -1,0 +1,16 @@
+#@ load("@ytt:data", "data")
+#@ load("@ytt:assert", "assert")
+---
+#! Execute
+#! $ ytt --file encryption-config/ --data-value secret=hoge
+kind: EncryptionConfig
+apiVersion: v1
+resources:
+  - resources:
+      - secrets
+    providers:
+      - aescbc:
+          keys:
+            - name: key1
+              secret: #@ data.values.secret or assert.fail("missing secret")
+      - identity: {}
