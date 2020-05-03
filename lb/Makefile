@@ -12,8 +12,8 @@
 	cd 06-data-encryption-keys && make
 
 clean:
-	#cd 02-client-tools && make clean
-	cd 03-compute-resources && make clean
-	cd 04-certificate-authority && make clean
-	cd 05-kubernetes-configuration-files && make clean
 	cd 06-data-encryption-keys && make clean
+	cd 05-kubernetes-configuration-files && make clean
+	cd 04-certificate-authority && make clean
+	cd 03-compute-resources && make clean
+	#cd 02-client-tools && make clean
