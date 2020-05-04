@@ -118,6 +118,7 @@ endef
 	vagrant ssh controller-1 -c 'cd controller && make 07-bootstrapping-etcd'
 	vagrant ssh controller-2 -c 'cd controller && make 07-bootstrapping-etcd'
 	vagrant ssh controller-0 -c 'cd controller/07-bootstrapping-etcd && make verify-etcd'
+08:
 
 clean:
 	vagrant ssh lb-0 -c 'cd lb && make clean'
